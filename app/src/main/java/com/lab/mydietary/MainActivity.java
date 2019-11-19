@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.icu.text.DecimalFormat;
 import android.icu.util.Calendar;
 import android.icu.util.GregorianCalendar;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,8 +24,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+
+import java.util.Arrays;
+
 public class MainActivity extends AppCompatActivity {
-    private EditText food_group_edit,date_edit,time_edit,meal_edit;
+    private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit;
     private RecyclerView food_group_list;
     private FoodGroupAdapter adapter;
     private CardView card_view_main;
@@ -38,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         time_edit = findViewById(R.id.time_edit);
         meal_edit = findViewById(R.id.meal_edit);
         card_view_main = findViewById(R.id.card_view_main);
+        location_edit = findViewById(R.id.location_edit);
         food_group_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +76,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 show_meal_dialog();
+            }
+        });
+        location_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                show_map_dialog();
             }
         });
 
@@ -163,6 +179,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    private void show_map_dialog()
+    {
+        final Dialog dialog = new Dialog(MainActivity.this);
+        dialog.setTitle("Maps");
+        dialog.setContentView(R.layout.fragment_map);
+        // Initialize the AutocompleteSupportFragment.
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+// Specify the types of place data to return.
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+
+// Set up a PlaceSelectionListener to handle the response.
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                // TODO: Get info about the selected place.
+                Log.d("RCV", "Place: " + place.getName() + ", " + place.getId());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.d("RCV", "An error occurred: " + status);
+            }
+        });
+        dialog.show();
     }
 
 }

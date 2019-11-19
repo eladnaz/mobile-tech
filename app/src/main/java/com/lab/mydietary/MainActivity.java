@@ -9,10 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.icu.text.DecimalFormat;
 import android.icu.util.Calendar;
-import android.icu.util.GregorianCalendar;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,8 +21,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+
+import java.util.Arrays;
+
 public class MainActivity extends AppCompatActivity {
-    private EditText food_group_edit,date_edit,time_edit,meal_edit;
+    private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit;
     private RecyclerView food_group_list;
     private FoodGroupAdapter adapter;
     private CardView card_view_main;
@@ -38,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
         time_edit = findViewById(R.id.time_edit);
         meal_edit = findViewById(R.id.meal_edit);
         card_view_main = findViewById(R.id.card_view_main);
+        location_edit = findViewById(R.id.location_edit);
+        Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         food_group_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 show_meal_dialog();
+            }
+        });
+        location_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                show_map_dialog();
             }
         });
 
@@ -118,8 +133,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 int hourFull = timePicker.getHour();
+                hourFull = hourFull == 0 ? 12 : hourFull;
                 int minute = timePicker.getMinute();
-                String am_pm = hourFull > 12 ? "PM" : "AM";
+                String am_pm = hourFull >= 12 ? "PM" : "AM";
                 time_edit.setText((hourFull > 12 ? hourFull-12 : hourFull)+":"+String.format("%02d",minute)+" "+ am_pm);
                 dialog.dismiss();
             }
@@ -163,6 +179,39 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    private void show_map_dialog()
+    {
+        final Dialog dialog = new Dialog(MainActivity.this);
+        dialog.setTitle("Maps");
+        dialog.setContentView(R.layout.fragment_map);
+        final AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME));
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                // TODO: Get info about the selected place.
+                location_edit.setText(place.getName()+","+place.getAddress());
+                MainActivity.this.getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.d("RCV", "An error occurred: " + status);
+            }
+        });
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialog)
+            {
+                MainActivity.this.getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
+            }
+        });
+        dialog.show();
     }
 
 }

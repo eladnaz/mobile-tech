@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/themeLight">
 
 
     <TimePicker
         android:id="@+id/time_picker"
+        android:theme="@style/TimePickerTheme"
         android:layout_weight="5"
         android:layout_width="match_parent"
         android:timePickerMode="spinner"
@@ -13,6 +15,7 @@
 
     <Button
         android:id="@+id/set_button"
+        android:elevation="5dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@drawable/roundedbuttons"

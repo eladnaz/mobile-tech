@@ -4,4 +4,9 @@
     <string name="food_group">Food Group</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
+    <string name="meal">Meal</string>
+    <string name="note">Notes</string>
+    <string name="note_hint">Anything you want to write here....</string>
+    <string name="user_name">Name of Reporter</string>
+    <string name="location">Location</string>
 </resources>

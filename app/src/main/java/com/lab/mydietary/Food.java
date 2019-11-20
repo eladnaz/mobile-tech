@@ -1,14 +1,21 @@
 package com.lab.mydietary;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import java.util.ArrayList;
 
-
+@Entity(tableName="Food")
 public class Food {
+    @Ignore
     static String[] food_groups = {"Wholemeal and Grains","Nature's Vegetables","Muscle Building Proteins","Colorful Fruits","Delicious Fats"};
+    @Ignore
     static int[] images_groups={R.drawable.grainsgroup,R.drawable.vegegroup,R.drawable.meatgroup,R.drawable.fruitgroup,R.drawable.fatsgroup};
-    static public ArrayList<Food> foodArray = new ArrayList<Food>();
 
-    public Food(String name, int group,String date, String time, int meal, String note, String user, double lat, double lang) {
+    public Food(int id,String name, int group,String date, String time, int meal, String note, String user, double lat, double lang) {
+        this.id = id;
         this.name = name;
         this.group = group;
         this.date = date;
@@ -96,7 +103,17 @@ public class Food {
         this.lat = lat;
         this.lang = lang;
     }
+    @NonNull
+    public int getId() {
+        return id;
+    }
 
+    public void setId(@NonNull int id) {
+        this.id = id;
+    }
+    @PrimaryKey(autoGenerate=true)
+    @NonNull
+    private int id;
     private String name;
     private int group;
     private String date;

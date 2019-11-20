@@ -1,7 +1,6 @@
 package com.lab.mydietary;
 
 import android.app.Dialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +44,7 @@ public class FoodGroupAdapter extends RecyclerView.Adapter<FoodGroupAdapter.MyVi
     public FoodGroupAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_card,parent,false);
+                .inflate(R.layout.list_food_group,parent,false);
         MyViewHolder holder = new MyViewHolder(view);
         return holder;
     }

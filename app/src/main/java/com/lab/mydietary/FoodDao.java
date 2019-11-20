@@ -25,4 +25,7 @@ public interface FoodDao {
 
     @Query("Select * FROM Food WHERE id = :id")
     public Food getFoodWithId(int id);
+
+    @Query("Delete FROM Food")
+    public void clearTable();
 }

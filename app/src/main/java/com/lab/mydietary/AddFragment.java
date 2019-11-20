@@ -1,20 +1,32 @@
 package com.lab.mydietary;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.icu.util.Calendar;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,9 +35,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
+
 
 
 import com.google.android.gms.common.api.Status;
@@ -41,14 +55,19 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.util.concurrent.Callable;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 
 /**
@@ -60,9 +79,10 @@ import java.util.concurrent.Future;
  * create an instance of this fragment.
  */
 public class AddFragment extends Fragment implements OnMapReadyCallback {
-
+    private final int CAMERA_REQUEST_CODE = 1367;
     private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit,food_name_edit,user_name_edit,note_edit;
     private FloatingActionButton add_btn;
+    private ImageButton camera_btn;
     private RecyclerView food_group_list;
     private FoodGroupAdapter adapter;
     private CardView card_view_main;
@@ -72,6 +92,9 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     private FoodDatabase db;
     private SupportMapFragment mapFragment;
     private OnFragmentInteractionListener mListener;
+    private ImageView camera_image,food_group_image_main;
+    private String currentPhotoPath;
+    private boolean hasImage = false;
 
     public AddFragment() {
         // Required empty public constructor
@@ -104,55 +127,24 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         time_edit = getView().findViewById(R.id.time_edit);
         note_edit = getView().findViewById(R.id.note_edit);
         meal_edit = getView().findViewById(R.id.meal_edit);
+        food_group_image_main = getView().findViewById((R.id.food_group_image_main));
+        camera_btn = getView().findViewById(R.id.camera_btn);
         user_name_edit = getView().findViewById(R.id.user_name_edit);
         card_view_main = getView().findViewById(R.id.card_view_main);
         add_btn = getView().findViewById(R.id.add_btn);
+        camera_image = getView().findViewById(R.id.camera_image);
         food_name_edit = getView().findViewById(R.id.food_name_edit);
         location_edit = getView().findViewById(R.id.location_edit);
         Places.initialize(getActivity(), getString(R.string.google_maps_key));
 
-        food_group_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show_group_dialog();
-            }
-        });
-        card_view_main.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show_group_dialog();
-            }
-        });
-        date_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show_date_dialog();
-            }
-        });
-        time_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show_time_dialog();
-            }
-        });
-        meal_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show_meal_dialog();
-            }
-        });
-        location_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show_map_dialog();
-            }
-        });
-        add_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addArray();
-            }
-        });
+        food_group_edit.setOnClickListener(v -> show_group_dialog());
+        card_view_main.setOnClickListener(v -> show_group_dialog());
+        date_edit.setOnClickListener(v -> show_date_dialog());
+        time_edit.setOnClickListener(v -> show_time_dialog());
+        meal_edit.setOnClickListener(v -> show_meal_dialog());
+        location_edit.setOnClickListener(v -> show_map_dialog());
+        add_btn.setOnClickListener(v -> addArray());
+        camera_btn.setOnClickListener(v -> open_camera());
         db = Room.databaseBuilder(getActivity(),FoodDatabase.class,"Food").build();
     }
 
@@ -199,6 +191,84 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         dialog.show();
     }
 
+    private void open_camera()
+    {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                Log.d("ERROR",ex.getMessage());
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(getActivity(),
+                        "com.example.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        getActivity();
+        if(requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Bitmap currentPhoto = BitmapFactory.decodeFile(currentPhotoPath);
+            currentPhoto = rotate(90,currentPhoto);
+            camera_image.setImageBitmap(currentPhoto);
+            hasImage = true;
+        }
+    }
+
+    public Bitmap rotate(float degree,Bitmap raw)
+    {
+        Matrix matrix = new Matrix();
+        int width = raw.getWidth();
+        int height = raw.getHeight();
+        int newWidth = 1008;
+
+        int newHeight  = 756;
+
+
+        float scaleWidth = ((float) newWidth) / width;
+
+        float scaleHeight = ((float) newHeight) / height;
+        matrix.postScale(scaleWidth, scaleHeight);
+        matrix.postRotate(degree);
+        Bitmap resizedBitmap = Bitmap.createBitmap(raw,0,0,width,height,matrix,true);
+        return resizedBitmap;
+    }
+
+
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String imageFileName = "temp";
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File[] left_over = storageDir.listFiles();
+        for(File file:left_over)
+        {
+            file.delete();
+        }
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+
+
+
     private void show_time_dialog()
     {
         final Dialog dialog = new Dialog(getActivity());
@@ -206,16 +276,13 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         dialog.setContentView(R.layout.dialog_time);
         final TimePicker timePicker = (TimePicker) dialog.findViewById(R.id.time_picker);
         Button set = dialog.findViewById((R.id.set_button));
-        set.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int hourFull = timePicker.getHour();
-                hourFull = hourFull == 0 ? 12 : hourFull;
-                int minute = timePicker.getMinute();
-                String am_pm = hourFull >= 12 ? "PM" : "AM";
-                time_edit.setText(String.format("%02d",(hourFull > 12 ? hourFull-12 : hourFull))+":"+String.format("%02d",minute)+" "+ am_pm);
-                dialog.dismiss();
-            }
+        set.setOnClickListener(v -> {
+            int hourFull = timePicker.getHour();
+            hourFull = hourFull == 0 ? 12 : hourFull;
+            int minute = timePicker.getMinute();
+            String am_pm = hourFull >= 12 ? "PM" : "AM";
+            time_edit.setText(String.format("%02d",(hourFull > 12 ? hourFull-12 : hourFull))+":"+String.format("%02d",minute)+" "+ am_pm);
+            dialog.dismiss();
         });
         dialog.show();
     }
@@ -321,9 +388,21 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             String date = editString(date_edit);
             String time = editString(time_edit);
             int meal = Arrays.asList(Food.food_groups).indexOf(editString(food_group_edit)); //returns -1 if empty.
-            String note = editString(note_edit).replace(" ","").length() > 0 ? editString(note_edit) : "Not Available";
+            String note = editString(note_edit).replace(" ","").length() > 0 ? editString(note_edit) : "NaN";
             String user = editString(user_name_edit);
-            Food food = new Food(0,food_name, food_group,date,time,meal,note,user,lat,lang);
+            String address = editString(location_edit).replace(" ","").length() > 0 ? editString(location_edit) : "NaN";
+            String imageUrl = "NaN";
+            try {
+                if(hasImage)
+                    imageUrl = saveImageForDetails(((BitmapDrawable)camera_image.getDrawable()).getBitmap());
+                else
+                    imageUrl = "NaN";
+            }
+            catch(IOException ex)
+            {
+                Log.d("ERROR",ex.getMessage());
+            }
+            Food food = new Food(0,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
             FoodDao dao = db.getFoodDao();
             ExecutorService exec = Executors.newSingleThreadExecutor();
             exec.execute(() -> {final long[] id = dao.insert(food);});
@@ -333,11 +412,28 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
+    private String saveImageForDetails(Bitmap raw) throws IOException
+    {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "PNG_" + timeStamp + ".png";
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_DCIM);
+        File image = new File(storageDir,imageFileName);
+        OutputStream out = new FileOutputStream(image);
+        raw.compress(Bitmap.CompressFormat.PNG,100,out);
+        out.flush();out.close();
+        return image.getAbsolutePath();
+    }
+
     private void clearFields()
     {
         food_name_edit.setText("");food_group_edit.setText("");date_edit.setText("");time_edit.setText("");meal_edit.setText("");note_edit.setText("");user_name_edit.setText("");location_edit.setText("");
+        hasImage = false;
+        camera_image.setImageResource(0);
+        food_group_image_main.setImageResource(0);
         lat = 0;
         lang = 0;
+       getChildFragmentManager().beginTransaction().remove(mapFragment).commit();
     }
 
     private boolean checkFields()
@@ -391,8 +487,11 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     public void onDestroyView() {
         super.onDestroyView();
         getActivity().getSupportFragmentManager().beginTransaction().remove(mapFragment).commit();
+        db.close();
 
     }
+
+
 
 
     /**

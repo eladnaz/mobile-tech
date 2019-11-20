@@ -1,5 +1,7 @@
 package com.lab.mydietary;
 
+import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -14,7 +16,7 @@ public class Food {
     @Ignore
     static int[] images_groups={R.drawable.grainsgroup,R.drawable.vegegroup,R.drawable.meatgroup,R.drawable.fruitgroup,R.drawable.fatsgroup};
 
-    public Food(int id,String name, int group,String date, String time, int meal, String note, String user, double lat, double lang) {
+    public Food(int id,String name, int group,String date, String time, int meal, String note, String user, double lat, double lang,String image,String address) {
         this.id = id;
         this.name = name;
         this.group = group;
@@ -25,6 +27,8 @@ public class Food {
         this.user = user;
         this.lat = lat;
         this.lang = lang;
+        this.image = image;
+        this.address = address;
     }
 
     public String getName() {
@@ -111,6 +115,25 @@ public class Food {
     public void setId(@NonNull int id) {
         this.id = id;
     }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+
+
     @PrimaryKey(autoGenerate=true)
     @NonNull
     private int id;
@@ -123,6 +146,12 @@ public class Food {
     private String user;
     private double lat;
     private double lang;
+
+
+
+
+    private String image;
+    private String address;
 
 
 }

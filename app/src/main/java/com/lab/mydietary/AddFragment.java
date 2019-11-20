@@ -1,19 +1,22 @@
 package com.lab.mydietary;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
-
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
+
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,6 +25,8 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
+
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.Places;
@@ -30,14 +35,26 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-
-
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements AddFragment.OnFragmentInteractionListener {
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link AddFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link AddFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class AddFragment extends Fragment {
+
     private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit,food_name_edit,user_name_edit,note_edit;
     private FloatingActionButton add_btn;
     private RecyclerView food_group_list;
@@ -48,24 +65,45 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
     private double lang = 0;
     private FoodDatabase db;
 
+    private OnFragmentInteractionListener mListener;
+
+    public AddFragment() {
+        // Required empty public constructor
+    }
+
+    public static AddFragment newInstance() {
+        AddFragment fragment = new AddFragment();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        AddFragment add_screen = AddFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,add_screen).commit();
-        /*
-        food_group_edit = findViewById(R.id.food_group_edit);
-        date_edit = findViewById(R.id.date_edit);
-        time_edit = findViewById(R.id.time_edit);
-        note_edit = findViewById(R.id.note_edit);
-        meal_edit = findViewById(R.id.meal_edit);
-        user_name_edit = findViewById(R.id.user_name_edit);
-        card_view_main = findViewById(R.id.card_view_main);
-        add_btn = findViewById(R.id.add_btn);
-        food_name_edit = findViewById(R.id.food_name_edit);
-        location_edit = findViewById(R.id.location_edit);
-        Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_add, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view,Bundle savedInstanceState){
+        food_group_edit = getView().findViewById(R.id.food_group_edit);
+        date_edit = getView().findViewById(R.id.date_edit);
+        time_edit = getView().findViewById(R.id.time_edit);
+        note_edit = getView().findViewById(R.id.note_edit);
+        meal_edit = getView().findViewById(R.id.meal_edit);
+        user_name_edit = getView().findViewById(R.id.user_name_edit);
+        card_view_main = getView().findViewById(R.id.card_view_main);
+        add_btn = getView().findViewById(R.id.add_btn);
+        food_name_edit = getView().findViewById(R.id.food_name_edit);
+        location_edit = getView().findViewById(R.id.location_edit);
+        Places.initialize(getActivity(), getString(R.string.google_maps_key));
         food_group_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -108,35 +146,36 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
                 addArray();
             }
         });
-        db = Room.databaseBuilder(this,FoodDatabase.class,"Food").build();
-         */
+        db = Room.databaseBuilder(getActivity(),FoodDatabase.class,"Food").build();
+    }
 
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onFragmentInteraction(uri);
+        }
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
     }
-    /*
-    private void show_group_dialog()
-    {
-        food_group_edit = findViewById(R.id.food_group_edit);
-        Dialog dialog = new Dialog(MainActivity.this);
-        dialog.setTitle("Food Group");
-        dialog.setContentView(R.layout.dialog_food_group);
-        food_group_list =(RecyclerView)dialog.findViewById(R.id.food_group_list);
-        layoutManager = new LinearLayoutManager(this);
-        food_group_list.setLayoutManager(layoutManager);
-        food_group_list.setHasFixedSize(true);
 
-        adapter = new FoodGroupAdapter(Food.food_groups,Food.images_groups,food_group_edit,dialog,card_view_main);
-        food_group_list.setAdapter(adapter);
-        dialog.show();
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     private void show_date_dialog()
     {
-        final Dialog dialog = new Dialog(MainActivity.this);
+        final Dialog dialog = new Dialog(getActivity());
         dialog.setTitle("Date Picker");
         dialog.setContentView(R.layout.dialog_date);
 
@@ -155,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
 
     private void show_time_dialog()
     {
-        final Dialog dialog = new Dialog(MainActivity.this);
+        final Dialog dialog = new Dialog(getActivity());
         dialog.setTitle("Time Picker");
         dialog.setContentView(R.layout.dialog_time);
         final TimePicker timePicker = (TimePicker) dialog.findViewById(R.id.time_picker);
@@ -176,13 +215,13 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
 
     private void show_meal_dialog()
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.MyDialogTheme);
-        final ArrayAdapter<String> mealAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),R.style.MyDialogTheme);
+        final ArrayAdapter<String> mealAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item){
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView item = (TextView) view.findViewById(android.R.id.text1);
-                item.setShadowLayer(1,1,1,Color.BLACK);
+                item.setShadowLayer(1,1,1, Color.BLACK);
                 item.setTextColor(Color.WHITE);
                 return view;
             }
@@ -207,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
             public void onClick(DialogInterface dialog, int which) {
                 String meal = mealAdapter.getItem(which);
                 meal_edit.setText(meal);
-                
+
             }
         });
         builder.show();
@@ -215,10 +254,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
 
     private void show_map_dialog()
     {
-        final Dialog dialog = new Dialog(MainActivity.this);
+        final Dialog dialog = new Dialog(getActivity());
         dialog.setTitle("Maps");
         dialog.setContentView(R.layout.fragment_map);
-        final AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        final AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME,Place.Field.LAT_LNG));
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -226,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
                 location_edit.setText(place.getName()+","+place.getAddress());
                 lat = place.getLatLng().latitude;
                 lang = place.getLatLng().longitude;
-                MainActivity.this.getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
+                getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
                 dialog.dismiss();
             }
 
@@ -241,9 +280,25 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
             @Override
             public void onCancel(DialogInterface dialog)
             {
-                MainActivity.this.getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
+                getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
             }
         });
+        dialog.show();
+    }
+
+    private void show_group_dialog()
+    {
+        food_group_edit = getView().findViewById(R.id.food_group_edit);
+        Dialog dialog = new Dialog(getActivity());
+        dialog.setTitle("Food Group");
+        dialog.setContentView(R.layout.dialog_food_group);
+        food_group_list =(RecyclerView)dialog.findViewById(R.id.food_group_list);
+        layoutManager = new LinearLayoutManager(getActivity());
+        food_group_list.setLayoutManager(layoutManager);
+        food_group_list.setHasFixedSize(true);
+
+        adapter = new FoodGroupAdapter(Food.food_groups,Food.images_groups,food_group_edit,dialog,card_view_main);
+        food_group_list.setAdapter(adapter);
         dialog.show();
     }
 
@@ -261,9 +316,19 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
             String user = editString(user_name_edit);
             Food food = new Food(0,food_name, food_group,date,time,meal,note,user,lat,lang);
             FoodDao dao = db.getFoodDao();
-            dao.insert(food);
+            ExecutorService exec = Executors.newSingleThreadExecutor();
+            exec.execute(() -> {final long[] id = dao.insert(food);});
+            clearFields();
+            return;
         }
 
+    }
+
+    private void clearFields()
+    {
+        food_name_edit.setText("");food_group_edit.setText("");date_edit.setText("");time_edit.setText("");meal_edit.setText("");note_edit.setText("");user_name_edit.setText("");location_edit.setText("");
+        lat = 0;
+        lang = 0;
     }
 
     private boolean checkFields()
@@ -302,8 +367,19 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
         return field.getText().toString();
     }
 
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
      */
-
-
-
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
+    }
 }

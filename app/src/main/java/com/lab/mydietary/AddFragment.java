@@ -29,6 +29,12 @@ import android.widget.Toast;
 
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
@@ -53,7 +59,7 @@ import java.util.concurrent.Future;
  * Use the {@link AddFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddFragment extends Fragment {
+public class AddFragment extends Fragment implements OnMapReadyCallback {
 
     private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit,food_name_edit,user_name_edit,note_edit;
     private FloatingActionButton add_btn;
@@ -64,7 +70,7 @@ public class AddFragment extends Fragment {
     private double lat = 0;
     private double lang = 0;
     private FoodDatabase db;
-
+    private SupportMapFragment mapFragment;
     private OnFragmentInteractionListener mListener;
 
     public AddFragment() {
@@ -104,6 +110,7 @@ public class AddFragment extends Fragment {
         food_name_edit = getView().findViewById(R.id.food_name_edit);
         location_edit = getView().findViewById(R.id.location_edit);
         Places.initialize(getActivity(), getString(R.string.google_maps_key));
+
         food_group_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -265,6 +272,8 @@ public class AddFragment extends Fragment {
                 location_edit.setText(place.getName()+","+place.getAddress());
                 lat = place.getLatLng().latitude;
                 lang = place.getLatLng().longitude;
+                mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                mapFragment.getMapAsync(AddFragment.this);
                 getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
                 dialog.dismiss();
             }
@@ -365,6 +374,24 @@ public class AddFragment extends Fragment {
     private String editString(EditText field)
     {
         return field.getText().toString();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        // Add a marker in Sydney, Australia,
+        // and move the map's camera to the same location.
+        LatLng eating_place = new LatLng(lat,lang);
+        googleMap.addMarker(new MarkerOptions().position(eating_place)
+                .title(location_edit.getText().toString()));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lang), 18.0f));
+
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        getActivity().getSupportFragmentManager().beginTransaction().remove(mapFragment).commit();
+
     }
 
 

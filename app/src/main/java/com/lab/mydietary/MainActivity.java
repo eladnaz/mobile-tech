@@ -288,6 +288,6 @@ public class MainActivity extends AppCompatActivity {
         return field.getText().toString();
     }
 
-    
+
 
 }

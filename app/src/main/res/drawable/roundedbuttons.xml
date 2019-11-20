@@ -4,6 +4,6 @@
     <!--
     <solid android:color="#ABABAB"/>-->
     <corners android:radius="10dp"/>
-    <solid android:color="@color/themeLight"/>
+    <solid android:color="@color/themeLightShadow"/>
 
 </shape>

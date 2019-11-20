@@ -26,15 +26,24 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+
+
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit;
+    private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit,food_name_edit,user_name_edit,note_edit;
+    private FloatingActionButton add_btn;
     private RecyclerView food_group_list;
     private FoodGroupAdapter adapter;
     private CardView card_view_main;
     private RecyclerView.LayoutManager layoutManager;
+    private double lat = 0;
+    private double lang = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +52,12 @@ public class MainActivity extends AppCompatActivity {
         food_group_edit = findViewById(R.id.food_group_edit);
         date_edit = findViewById(R.id.date_edit);
         time_edit = findViewById(R.id.time_edit);
+        note_edit = findViewById(R.id.note_edit);
         meal_edit = findViewById(R.id.meal_edit);
+        user_name_edit = findViewById(R.id.user_name_edit);
         card_view_main = findViewById(R.id.card_view_main);
+        add_btn = findViewById(R.id.add_btn);
+        food_name_edit = findViewById(R.id.food_name_edit);
         location_edit = findViewById(R.id.location_edit);
         Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         food_group_edit.setOnClickListener(new View.OnClickListener() {
@@ -83,6 +96,12 @@ public class MainActivity extends AppCompatActivity {
                 show_map_dialog();
             }
         });
+        add_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addArray();
+            }
+        });
 
     }
 
@@ -96,9 +115,8 @@ public class MainActivity extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         food_group_list.setLayoutManager(layoutManager);
         food_group_list.setHasFixedSize(true);
-        String[] food_groups = {"Wholemeal and Grains","Nature's Vegetables","Muscle Building Proteins","Colorful Fruits","Delicious Fats"};
-        int[] images={R.drawable.grainsgroup,R.drawable.vegegroup,R.drawable.meatgroup,R.drawable.fruitgroup,R.drawable.fatsgroup};
-        adapter = new FoodGroupAdapter(food_groups,images,food_group_edit,dialog,card_view_main);
+
+        adapter = new FoodGroupAdapter(Food.food_groups,Food.images_groups,food_group_edit,dialog,card_view_main);
         food_group_list.setAdapter(adapter);
         dialog.show();
     }
@@ -136,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                 hourFull = hourFull == 0 ? 12 : hourFull;
                 int minute = timePicker.getMinute();
                 String am_pm = hourFull >= 12 ? "PM" : "AM";
-                time_edit.setText((hourFull > 12 ? hourFull-12 : hourFull)+":"+String.format("%02d",minute)+" "+ am_pm);
+                time_edit.setText(String.format("%02d",(hourFull > 12 ? hourFull-12 : hourFull))+":"+String.format("%02d",minute)+" "+ am_pm);
                 dialog.dismiss();
             }
         });
@@ -151,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView item = (TextView) view.findViewById(android.R.id.text1);
+                item.setShadowLayer(1,1,1,Color.BLACK);
                 item.setTextColor(Color.WHITE);
                 return view;
             }
@@ -187,12 +206,13 @@ public class MainActivity extends AppCompatActivity {
         dialog.setTitle("Maps");
         dialog.setContentView(R.layout.fragment_map);
         final AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME,Place.Field.LAT_LNG));
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
                 location_edit.setText(place.getName()+","+place.getAddress());
+                lat = place.getLatLng().latitude;
+                lang = place.getLatLng().longitude;
                 MainActivity.this.getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
                 dialog.dismiss();
             }
@@ -213,5 +233,61 @@ public class MainActivity extends AppCompatActivity {
         });
         dialog.show();
     }
+
+    private void addArray()
+    {
+        if(checkFields())
+            return;
+        else {
+            String food_name = editString(food_name_edit);
+            int food_group = Arrays.asList(Food.food_groups).indexOf(editString(food_group_edit));
+            String date = editString(date_edit);
+            String time = editString(time_edit);
+            int meal = Arrays.asList(Food.food_groups).indexOf(editString(food_group_edit)); //returns -1 if empty.
+            String note = editString(note_edit).replace(" ","").length() > 0 ? editString(note_edit) : "Not Available";
+            String user = editString(user_name_edit);
+            Food food = new Food(food_name, food_group,date,time,meal,note,user,lat,lang);
+            Food.foodArray.add(food);
+        }
+
+    }
+
+    private boolean checkFields()
+    {
+        boolean hasEmptyField = false;
+        Map<String,EditText> field_map = new HashMap<String,EditText>();
+        field_map.put("Food Name",food_name_edit);
+        field_map.put("Food Group",food_group_edit);
+        field_map.put("Date",date_edit);
+        field_map.put("Time",time_edit);
+        field_map.put("Name of Reporter",user_name_edit);
+        for(Map.Entry m:field_map.entrySet())
+        {
+            if(!hasEmptyField)
+                hasEmptyField = isEmptyOrSpace((String)m.getKey(),(EditText)m.getValue());
+            else
+                isEmptyOrSpace((String)m.getKey(),(EditText)m.getValue());
+        }
+        return hasEmptyField;
+    }
+
+    private boolean isEmptyOrSpace(String fieldName,EditText field)
+    {
+        String input = editString(field).replace(" ","");
+        if(input.isEmpty())
+        {
+            field.setError(fieldName + " is required");
+            return true;
+        }
+        else
+            return false;
+    }
+
+    private String editString(EditText field)
+    {
+        return field.getText().toString();
+    }
+
+    
 
 }

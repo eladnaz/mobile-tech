@@ -4,8 +4,8 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/themeLight</item>
-        <item name="colorPrimaryDark">@color/themeDark</item>
-        <item name="colorAccent">@color/themeDark</item>
+        <item name="colorPrimaryDark">@color/themeLight</item>
+        <item name="colorAccent">@color/themeLight</item>
     </style>
 
     <style name="MyDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">

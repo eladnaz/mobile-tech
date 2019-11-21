@@ -7,8 +7,13 @@
 
     <item
         android:id="@+id/action_list"
-        android:orderInCategory="300"
-        android:title="Food List Details"
+        android:orderInCategory="2"
+        android:title="List Details"
+        app:showAsAction="never"></item>
+    <item
+        android:id="@+id/action_add"
+        android:orderInCategory="1"
+        android:title="New Entry"
         app:showAsAction="never"></item>
 
 </menu>

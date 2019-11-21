@@ -11,7 +11,8 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/AppTheme"
-        app:popupTheme="@style/AppTheme"/>
+        app:popupTheme="@style/AppTheme"
+        app:titleTextColor="@color/white"/>
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"

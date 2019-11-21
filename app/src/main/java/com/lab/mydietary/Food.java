@@ -15,6 +15,8 @@ public class Food {
     static String[] food_groups = {"Wholemeal and Grains","Nature's Vegetables","Muscle Building Proteins","Colorful Fruits","Delicious Fats"};
     @Ignore
     static int[] images_groups={R.drawable.grainsgroup,R.drawable.vegegroup,R.drawable.meatgroup,R.drawable.fruitgroup,R.drawable.fatsgroup};
+    @Ignore
+    static String[] meals = {"Snack","Breakfast","Lunch","Dinner","Supper","Tea Time","Brunch"};
 
     public Food(int id,String name, int group,String date, String time, int meal, String note, String user, double lat, double lang,String image,String address) {
         this.id = id;

@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -13,6 +14,8 @@ import androidx.room.RoomDatabase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -57,13 +60,18 @@ public class ListFragment extends Fragment {
         food_added_list =(RecyclerView)view.findViewById(R.id.food_added_list);
         FoodDao dao = db.getFoodDao();
         List<Food> food_list = dao.getFoods();
-        Context context = getActivity();
-        FoodListAdapter adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context);
-        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        if(!(food_list.size() > 0))
+            Toast.makeText(getActivity(),"Nothing has been added yet",Toast.LENGTH_SHORT).show();
+        else
+        {
+            Context context = getActivity();
+            FoodListAdapter adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context,getFragmentManager(),Food.meals);
+            RecyclerView.LayoutManager grid = new GridLayoutManager(getActivity(),2);
 
-        food_added_list.setLayoutManager(linearLayoutManager);
-        food_added_list.setHasFixedSize(true);
-        food_added_list.setAdapter(adapter);
+            food_added_list.setLayoutManager(grid);
+            food_added_list.setHasFixedSize(true);
+            food_added_list.setAdapter(adapter);
+        }
         // Inflate the layout for this fragment
         return view;
 

@@ -21,6 +21,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -308,20 +310,13 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         mealAdapter.add("Tea Time");
         mealAdapter.add("Brunch");
 
-        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
 
-        builder.setAdapter(mealAdapter, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String meal = mealAdapter.getItem(which);
-                meal_edit.setText(meal);
+        builder.setNegativeButton("cancel", (dialog, which) -> dialog.dismiss());
 
-            }
+        builder.setAdapter(mealAdapter, (dialog, which) -> {
+            String meal = mealAdapter.getItem(which);
+            meal_edit.setText(meal);
+
         });
         builder.show();
     }
@@ -339,7 +334,8 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
                 location_edit.setText(place.getName()+","+place.getAddress());
                 lat = place.getLatLng().latitude;
                 lang = place.getLatLng().longitude;
-                mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                FragmentManager addMng = getChildFragmentManager();
+                mapFragment = (SupportMapFragment) addMng.findFragmentById(R.id.map);
                 mapFragment.getMapAsync(AddFragment.this);
                 getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
                 dialog.dismiss();
@@ -347,18 +343,10 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.d("RCV", "An error occurred: " + status);
+                Log.d("ERROR", "An error occurred: " + status);
             }
         });
-        dialog.setOnCancelListener(new DialogInterface.OnCancelListener()
-        {
-            @Override
-            public void onCancel(DialogInterface dialog)
-            {
-                getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
-            }
-        });
+        dialog.setOnCancelListener(dialog1 -> getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit());
         dialog.show();
     }
 
@@ -483,12 +471,13 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
+
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        getActivity().getSupportFragmentManager().beginTransaction().remove(mapFragment).commit();
+        mapFragment = null;
         db.close();
-
     }
 
 

@@ -114,7 +114,8 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
             dialog.setContentView(R.layout.card_details);
             ImageButton left_btn = dialog.findViewById(R.id.left_btn);
             ImageButton right_btn = dialog.findViewById(R.id.right_btn);
-
+            final SupportMapFragment mapFragment = (SupportMapFragment)fm.findFragmentById(R.id.detail_map);
+            mapFragment.getMapAsync(FoodListAdapter.this);
             left_btn.setOnClickListener(view -> {
                 if(onDelete){
                     dao.delete(list.get(position));
@@ -142,13 +143,13 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
                else{
                    AppCompatActivity activity = (AppCompatActivity)context;
                    AddFragment myFragment = AddFragment.newInstance(list.get(position));
+                   fm.beginTransaction().remove(mapFragment).commit();
                    dialog.dismiss();
                    activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();
 
                }
             });
-            final SupportMapFragment mapFragment = (SupportMapFragment)fm.findFragmentById(R.id.detail_map);
-            mapFragment.getMapAsync(FoodListAdapter.this);
+
             ImageView top_image = dialog.findViewById(R.id.detail_image_top);
             ImageView group_image = dialog.findViewById(R.id.detail_food_groupImage);
             if(!path.equals("NaN")){

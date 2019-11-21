@@ -69,7 +69,6 @@ public class ListFragment extends Fragment implements Comparator<Food> {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                Log.d("RCV",newText);
                 newText=newText.toLowerCase();
                 List<Food> newList = new ArrayList<>();
                 for (Food food : food_list){

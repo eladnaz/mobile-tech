@@ -149,7 +149,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         Places.initialize(getActivity(), getString(R.string.google_maps_key));
         FragmentManager addMng = getChildFragmentManager();
         mapFragment = (SupportMapFragment) addMng.findFragmentById(R.id.map);
-        if(data != null)
+        if(data.getParcelable("edit") !=  null)
         {
             isUpdate = true;
             Food food = data.getParcelable("edit");
@@ -167,7 +167,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             lat = food.getLat();
             lang = food.getLang();
             mapFragment.getMapAsync(this);
-            camera_image.setImageBitmap(BitmapFactory.decodeFile(food.getImage()));
+            camera_image.setImageBitmap(BitmapFactory.decodeFile(oldImage));
         }
 
         food_group_edit.setOnClickListener(v -> show_group_dialog());
@@ -412,6 +412,8 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             try {
                 if(hasImage)
                     imageUrl = saveImageForDetails(((BitmapDrawable)camera_image.getDrawable()).getBitmap());
+                else if(isUpdate)
+                    imageUrl = oldImage;
                 else
                     imageUrl = "NaN";
             }
@@ -423,9 +425,13 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             FoodDao dao = db.getFoodDao();
             if(isUpdate)
             {
+
                 Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
-                File file = new File(oldImage);
-                file.delete();
+                if(!imageUrl.equals("NaN") && !imageUrl.equals(oldImage))
+                {
+                    File file = new File(oldImage);
+                    file.delete();
+                }
                 dao.update(food);
                 ListFragment myFragment = ListFragment.newInstance();
                 getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();

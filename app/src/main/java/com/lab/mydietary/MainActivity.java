@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         list_screen = ListFragment.newInstance();
-        add_screen = AddFragment.newInstance();
+        add_screen = AddFragment.newInstance(null);
         getSupportFragmentManager().beginTransaction().attach(add_screen).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,list_screen).commit();
 

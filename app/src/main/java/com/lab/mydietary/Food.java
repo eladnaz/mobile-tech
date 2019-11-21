@@ -1,6 +1,8 @@
 package com.lab.mydietary;
 
 import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
@@ -10,7 +12,7 @@ import androidx.room.PrimaryKey;
 import java.util.ArrayList;
 
 @Entity(tableName="Food")
-public class Food {
+public class Food implements Parcelable {
     @Ignore
     static String[] food_groups = {"Wholemeal and Grains","Nature's Vegetables","Muscle Building Proteins","Colorful Fruits","Delicious Fats"};
     @Ignore
@@ -155,5 +157,14 @@ public class Food {
     private String image;
     private String address;
 
+    @Ignore
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+    @Ignore
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
 
+    }
 }

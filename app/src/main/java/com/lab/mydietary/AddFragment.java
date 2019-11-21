@@ -96,21 +96,30 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     private OnFragmentInteractionListener mListener;
     private ImageView camera_image,food_group_image_main;
     private String currentPhotoPath;
+    private AutocompleteSupportFragment autocompleteFragment;
     private boolean hasImage = false;
+    private Bundle data=null;
+    private boolean isUpdate=false;
+    private String oldImage;
+    private int id = 0;
 
     public AddFragment() {
         // Required empty public constructor
     }
 
-    public static AddFragment newInstance() {
+    public static AddFragment newInstance(Food food) {
         AddFragment fragment = new AddFragment();
         Bundle args = new Bundle();
+        if(food != null)
+            args.putParcelable("edit",food);
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if(this.getArguments() != null)
+            data=this.getArguments();
         super.onCreate(savedInstanceState);
 
     }
@@ -138,6 +147,28 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         food_name_edit = getView().findViewById(R.id.food_name_edit);
         location_edit = getView().findViewById(R.id.location_edit);
         Places.initialize(getActivity(), getString(R.string.google_maps_key));
+        FragmentManager addMng = getChildFragmentManager();
+        mapFragment = (SupportMapFragment) addMng.findFragmentById(R.id.map);
+        if(data != null)
+        {
+            isUpdate = true;
+            Food food = data.getParcelable("edit");
+            id = food.getId();
+            food_name_edit.setText(food.getName());
+            food_group_image_main.setImageResource(Food.images_groups[food.getGroup()]);
+            food_group_edit.setText(Food.food_groups[food.getGroup()]);
+            time_edit.setText(food.getTime());
+            date_edit.setText(food.getDate());
+            oldImage = food.getImage();
+            meal_edit.setText(Food.meals[food.getMeal()]);
+            note_edit.setText(food.getNote());
+            user_name_edit.setText(food.getUser());
+            location_edit.setText(food.getAddress());
+            lat = food.getLat();
+            lang = food.getLang();
+            mapFragment.getMapAsync(this);
+            camera_image.setImageBitmap(BitmapFactory.decodeFile(food.getImage()));
+        }
 
         food_group_edit.setOnClickListener(v -> show_group_dialog());
         card_view_main.setOnClickListener(v -> show_group_dialog());
@@ -147,7 +178,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         location_edit.setOnClickListener(v -> show_map_dialog());
         add_btn.setOnClickListener(v -> addArray());
         camera_btn.setOnClickListener(v -> open_camera());
-        db = Room.databaseBuilder(getActivity(),FoodDatabase.class,"Food").build();
+        db = Room.databaseBuilder(getActivity(),FoodDatabase.class,"Food").allowMainThreadQueries().build();
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -326,7 +357,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         final Dialog dialog = new Dialog(getActivity());
         dialog.setTitle("Maps");
         dialog.setContentView(R.layout.fragment_map);
-        final AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        autocompleteFragment = (AutocompleteSupportFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME,Place.Field.LAT_LNG));
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -334,8 +365,6 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
                 location_edit.setText(place.getName()+","+place.getAddress());
                 lat = place.getLatLng().latitude;
                 lang = place.getLatLng().longitude;
-                FragmentManager addMng = getChildFragmentManager();
-                mapFragment = (SupportMapFragment) addMng.findFragmentById(R.id.map);
                 mapFragment.getMapAsync(AddFragment.this);
                 getActivity().getSupportFragmentManager().beginTransaction().remove(autocompleteFragment).commit();
                 dialog.dismiss();
@@ -390,12 +419,27 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             {
                 Log.d("ERROR",ex.getMessage());
             }
-            Food food = new Food(0,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
+
             FoodDao dao = db.getFoodDao();
-            ExecutorService exec = Executors.newSingleThreadExecutor();
-            exec.execute(() -> {final long[] id = dao.insert(food);});
-            clearFields();
-            return;
+            if(isUpdate)
+            {
+                Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
+                File file = new File(oldImage);
+                file.delete();
+                dao.update(food);
+                ListFragment myFragment = ListFragment.newInstance();
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();
+                return;
+            }
+            else
+            {
+                Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
+                dao.insert(food);
+                clearFields();
+                return;
+            }
+
+
         }
 
     }
@@ -421,7 +465,6 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         food_group_image_main.setImageResource(0);
         lat = 0;
         lang = 0;
-       getChildFragmentManager().beginTransaction().remove(mapFragment).commit();
     }
 
     private boolean checkFields()

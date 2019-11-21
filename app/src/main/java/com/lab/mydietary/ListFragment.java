@@ -4,22 +4,25 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
-import androidx.room.RoomDatabase;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**
@@ -30,12 +33,13 @@ import java.util.concurrent.Executors;
  * Use the {@link ListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ListFragment extends Fragment {
+public class ListFragment extends Fragment implements Comparator<Food> {
 
     private OnFragmentInteractionListener mListener;
     private RecyclerView food_added_list;
     private FoodDatabase db;
-
+    private List<Food> food_list;
+    private FoodListAdapter adapter;
     public ListFragment() {
         // Required empty public constructor
     }
@@ -48,8 +52,45 @@ public class ListFragment extends Fragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_search, menu);
+
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
+        search(searchView);
+    }
+
+    private void search(SearchView searchView) {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d("RCV",newText);
+                newText=newText.toLowerCase();
+                List<Food> newList = new ArrayList<>();
+                for (Food food : food_list){
+                    String food_name=food.getName().toLowerCase();
+                    String user = food.getUser().toLowerCase();
+                    String address = food.getAddress().toLowerCase();
+                    if (food_name.contains(newText)||user.contains(newText)||address.contains(newText)){
+                        newList.add(food);
+                    }
+                }
+                adapter.setFilter(newList);
+                return true;
+            }
+        });
+    }
+
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -59,13 +100,15 @@ public class ListFragment extends Fragment {
         db = Room.databaseBuilder(getActivity(),FoodDatabase.class,"Food").allowMainThreadQueries().build();
         food_added_list =(RecyclerView)view.findViewById(R.id.food_added_list);
         FoodDao dao = db.getFoodDao();
-        List<Food> food_list = dao.getFoods();
+        food_list = dao.getFoods();
+
         if(!(food_list.size() > 0))
             Toast.makeText(getActivity(),"Nothing has been added yet",Toast.LENGTH_SHORT).show();
         else
         {
+            Collections.sort(food_list,this);
             Context context = getActivity();
-            FoodListAdapter adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context,getFragmentManager(),Food.meals);
+            adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context,getFragmentManager(),Food.meals,dao,food_added_list);
             RecyclerView.LayoutManager grid = new GridLayoutManager(getActivity(),2);
 
             food_added_list.setLayoutManager(grid);
@@ -79,6 +122,7 @@ public class ListFragment extends Fragment {
 
 
     }
+
 
     @Override
     public void onViewCreated(View view,Bundle savedInstanceState){
@@ -111,6 +155,11 @@ public class ListFragment extends Fragment {
     public void onDestroy(){
         super.onDestroy();
         db.close();
+    }
+
+    @Override
+    public int compare(Food o1, Food o2) {
+        return o1.getName().compareToIgnoreCase(o2.getName());
     }
 
     /**

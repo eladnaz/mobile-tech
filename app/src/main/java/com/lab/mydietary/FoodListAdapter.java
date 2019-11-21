@@ -12,9 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import androidx.fragment.app.FragmentManager;
@@ -32,6 +35,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyViewHolder> implements OnMapReadyCallback  {
@@ -45,6 +50,9 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
     private double lang;
     private String address;
     private String[] meals;
+    private boolean onDelete = false;
+    private RecyclerView recycler;
+    private FoodDao dao;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -66,8 +74,10 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
         }
     }
 
-    public FoodListAdapter(String[] food_groups,int[] food_images, List<Food> list,Context context,FragmentManager fm,String[] meals)
+    public FoodListAdapter(String[] food_groups,int[] food_images, List<Food> list,Context context,FragmentManager fm,String[] meals,FoodDao dao,RecyclerView recycler)
     {
+        this.recycler = recycler;
+        this.dao = dao;
         this.meals = meals;
         this.food_groups = food_groups;
         this.fm = fm;
@@ -102,7 +112,41 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
             final Dialog dialog = new Dialog(context);
             dialog.setTitle("Details");
             dialog.setContentView(R.layout.card_details);
+            ImageButton left_btn = dialog.findViewById(R.id.left_btn);
+            ImageButton right_btn = dialog.findViewById(R.id.right_btn);
 
+            left_btn.setOnClickListener(view -> {
+                if(onDelete){
+                    dao.delete(list.get(position));
+                    File file = new File(list.get(position).getImage());
+                    file.delete();
+                    list.remove(position);
+                    recycler.removeViewAt(position);
+                    this.notifyItemRemoved(position);
+                    this.notifyItemRangeChanged(position, list.size());
+                    dialog.dismiss();
+                }
+                else
+                {
+                    onDelete = true;
+                    left_btn.setImageResource(R.drawable.ic_confirm);
+                    right_btn.setImageResource(R.drawable.ic_cancel);
+                }
+            });
+            right_btn.setOnClickListener(view -> {
+               if(onDelete){
+                   onDelete = false;
+                   left_btn.setImageResource(R.drawable.ic_delete);
+                   right_btn.setImageResource(R.drawable.ic_edit);
+               }
+               else{
+                   AppCompatActivity activity = (AppCompatActivity)context;
+                   AddFragment myFragment = AddFragment.newInstance(list.get(position));
+                   dialog.dismiss();
+                   activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();
+
+               }
+            });
             final SupportMapFragment mapFragment = (SupportMapFragment)fm.findFragmentById(R.id.detail_map);
             mapFragment.getMapAsync(FoodListAdapter.this);
             ImageView top_image = dialog.findViewById(R.id.detail_image_top);
@@ -130,6 +174,12 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
             dialog.setOnCancelListener(dialog1 -> fm.beginTransaction().remove(mapFragment).commit());
             dialog.show();
         });
+    }
+
+    public void setFilter(List<Food> newList){
+        list=new ArrayList<>();
+        list.addAll(newList);
+        this.notifyDataSetChanged();
     }
 
     @Override

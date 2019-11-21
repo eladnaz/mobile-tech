@@ -20,6 +20,7 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
+                    android:background="@color/themeLight"
                     android:layout_height="wrap_content">
 
                     <ImageView
@@ -37,6 +38,7 @@
                     <TextView
                         android:id="@+id/detail_food_name"
                         android:layout_width="0dp"
+                        android:textColor="@color/white"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
@@ -51,6 +53,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
+                        android:textColor="@color/white"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
                         android:text="TextView"
@@ -63,6 +66,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
+                        android:textColor="@color/white"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
                         android:text="TextView"
@@ -87,6 +91,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
+                        android:textColor="@color/white"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
                         android:text="TextView"
@@ -100,6 +105,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
+                        android:textColor="@color/white"
                         android:layout_marginEnd="16dp"
                         android:text="TextView"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -125,6 +131,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
+                        android:textColor="@color/white"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
                         android:text="TextView"
@@ -136,6 +143,7 @@
                         android:id="@+id/detail_notes"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:textColor="@color/white"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
@@ -147,21 +155,49 @@
                     <TextView
                         android:id="@+id/detail_user"
                         android:layout_width="0dp"
+                        android:textColor="@color/white"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="32dp"
+                        android:layout_marginBottom="64dp"
                         android:text="TextView"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/detail_notes" />
-
-
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </ScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/left_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_highlight_dark"
+                    android:layout_margin="0dp"
+                    android:layout_weight="1"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    app:srcCompat="@drawable/ic_delete" />
+
+                <ImageButton
+                    android:id="@+id/right_btn"
+                    android:layout_width="wrap_content"
+                    android:background="@drawable/button_highlight_dark"
+                    android:layout_margin="0dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_edit" />
+            </LinearLayout>
         </RelativeLayout>
+
     </androidx.cardview.widget.CardView>
 </LinearLayout>

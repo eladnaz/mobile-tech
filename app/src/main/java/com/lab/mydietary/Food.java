@@ -1,5 +1,9 @@
 package com.lab.mydietary;
 
+import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -8,13 +12,15 @@ import androidx.room.PrimaryKey;
 import java.util.ArrayList;
 
 @Entity(tableName="Food")
-public class Food {
+public class Food implements Parcelable {
     @Ignore
     static String[] food_groups = {"Wholemeal and Grains","Nature's Vegetables","Muscle Building Proteins","Colorful Fruits","Delicious Fats"};
     @Ignore
     static int[] images_groups={R.drawable.grainsgroup,R.drawable.vegegroup,R.drawable.meatgroup,R.drawable.fruitgroup,R.drawable.fatsgroup};
+    @Ignore
+    static String[] meals = {"Snack","Breakfast","Lunch","Dinner","Supper","Tea Time","Brunch"};
 
-    public Food(int id,String name, int group,String date, String time, int meal, String note, String user, double lat, double lang) {
+    public Food(int id,String name, int group,String date, String time, int meal, String note, String user, double lat, double lang,String image,String address) {
         this.id = id;
         this.name = name;
         this.group = group;
@@ -25,6 +31,8 @@ public class Food {
         this.user = user;
         this.lat = lat;
         this.lang = lang;
+        this.image = image;
+        this.address = address;
     }
 
     public String getName() {
@@ -111,6 +119,25 @@ public class Food {
     public void setId(@NonNull int id) {
         this.id = id;
     }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+
+
     @PrimaryKey(autoGenerate=true)
     @NonNull
     private int id;
@@ -125,4 +152,19 @@ public class Food {
     private double lang;
 
 
+
+
+    private String image;
+    private String address;
+
+    @Ignore
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+    @Ignore
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+    }
 }

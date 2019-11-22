@@ -5,7 +5,9 @@
     <color name="colorAccent">#D81B60</color>
     <color name="themeLight">#77bbd1</color>
     <color name="themeLightShadow">#71B0C5</color>
+    <color name="themeLightHighlight">#72B1C5</color>
     <color name="themeDark">#6374CB</color>
+    <color name="themeDarkHighlight">#5B6BBB</color>
     <color name="grey">#808080</color>
     <color name="white">#FFFFFF</color>
 </resources>

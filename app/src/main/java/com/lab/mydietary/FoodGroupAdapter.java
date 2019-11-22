@@ -55,17 +55,14 @@ public class FoodGroupAdapter extends RecyclerView.Adapter<FoodGroupAdapter.MyVi
         final int index = holder.getAdapterPosition();
         holder.image.setImageResource(images[position]);
         holder.text.setText(food_groups[position]);
-        holder.card.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                food_group_edit.setText(food_groups[index]);
-                ((ImageView)card_view_main.findViewById(R.id.food_group_image_main)).setImageResource(images[index]);
-                FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
-                param.setMargins(0,20,0,20);
-                ((ImageView)card_view_main.findViewById(R.id.food_group_image_main)).setLayoutParams(param);
-                card_view_main.setElevation(5);
-                dialog.dismiss();
-            }
+        holder.card.setOnClickListener(v -> {
+            food_group_edit.setText(food_groups[index]);
+            ((ImageView)card_view_main.findViewById(R.id.food_group_image_main)).setImageResource(images[index]);
+            FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+            param.setMargins(0,20,0,20);
+            ((ImageView)card_view_main.findViewById(R.id.food_group_image_main)).setLayoutParams(param);
+            card_view_main.setElevation(5);
+            dialog.dismiss();
         });
 
     }

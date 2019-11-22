@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/setting_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/themeDark"
+        android:paddingVertical="10dp"
+        android:paddingLeft="10dp"
+        android:text="@string/settings"
+        android:textColor="@color/white"
+        android:textSize="10pt" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/themeLight"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
+            android:paddingVertical="20dp"
+            android:paddingLeft="10dp"
+            android:text="@string/splash_setting"
+            android:textColor="@color/white"
+            android:textSize="10pt" />
+
+        <CheckBox
+            android:id="@+id/setting_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/setting_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/button_highlight_dark"
+            android:paddingVertical="15dp"
+            android:src="@drawable/ic_confirm"
+            tools:src="@drawable/ic_confirm" />
+
+        <ImageButton
+            android:id="@+id/setting_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/button_highlight_dark"
+            android:paddingVertical="15dp"
+            android:src="@drawable/ic_cancel"
+            tools:src="@drawable/ic_cancel" />
+    </LinearLayout>
+
+</LinearLayout>

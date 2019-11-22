@@ -4,6 +4,8 @@ package com.lab.mydietary;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 
 import android.net.Uri;
@@ -55,14 +57,23 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
         if(id == LIST_FRAGMENT)
         {
             if(list_screen != null && !list_screen.isVisible())
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,list_screen).commit();
+            {
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.setCustomAnimations(R.anim.slide_in,R.anim.slide_out);
+                ft.replace(R.id.fragment_container,list_screen).commit();
+            }
             else
-                Toast.makeText(this,"You're already on the list page",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"You're already on the Home page",Toast.LENGTH_SHORT).show();
         }
         else if(id == ADD_FRAGMENT)
         {
             if(add_screen !=null && !add_screen.isVisible())
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,add_screen).commit();
+            {
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.setCustomAnimations(R.anim.slide_in,R.anim.slide_out);
+                ft.replace(R.id.fragment_container,add_screen).commit();
+            }
+
             else
                 Toast.makeText(this,"You're already on the adding page",Toast.LENGTH_SHORT).show();
         }

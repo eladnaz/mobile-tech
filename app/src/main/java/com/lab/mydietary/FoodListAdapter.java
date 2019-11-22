@@ -2,65 +2,57 @@ package com.lab.mydietary;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyViewHolder> implements OnMapReadyCallback  {
+public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyViewHolder>  {
     private String[] food_groups;
     private int[] food_images;
     private List<Food> list;
     private Context context;
     private FragmentManager fm;
-    private boolean hasImage;
-    private double lat;
-    private double lang;
-    private String address;
+    private SupportMapFragment mapFragment;
     private String[] meals;
     private boolean onDelete = false;
     private RecyclerView recycler;
     private FoodDao dao;
+    private int lastPosition = -1;
+    private int offset = 0;
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        LatLng eating_place = new LatLng(lat,lang);
-        googleMap.addMarker(new MarkerOptions().position(eating_place)
-                .title(address));
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lang), 18.0f));
-    }
+
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
         public ImageView image;
@@ -102,10 +94,6 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
         int group = list.get(position).getGroup();
         Bitmap preview = !path.equals("NaN")? BitmapFactory.decodeFile(path) : BitmapFactory.decodeResource(context.getResources(),food_images[group]);
         preview = Bitmap.createScaledBitmap(preview,500,500,false);
-        FragmentTransaction trans = fm.beginTransaction();
-        lat = list.get(position).getLat();
-        lang = list.get(position).getLang();
-        address = list.get(position).getAddress();
         holder.image.setImageBitmap(preview);
         holder.text.setText(list.get(position).getName());
         holder.card.setOnClickListener(v->{
@@ -114,22 +102,48 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
             dialog.setContentView(R.layout.card_details);
             ImageButton left_btn = dialog.findViewById(R.id.left_btn);
             ImageButton right_btn = dialog.findViewById(R.id.right_btn);
-            final SupportMapFragment mapFragment = (SupportMapFragment)fm.findFragmentById(R.id.detail_map);
-            mapFragment.getMapAsync(FoodListAdapter.this);
+            if(!list.get(position).getAddress().equals("NaN"))
+            {
+                mapFragment = (SupportMapFragment)fm.findFragmentById(R.id.detail_map);
+                mapFragment.getMapAsync(googleMap -> { LatLng eating_place = new LatLng(list.get(position).getLat(),list.get(position).getLang());
+                    googleMap.addMarker(new MarkerOptions().position(eating_place)
+                            .title(list.get(position).getAddress()));
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(eating_place, 18.0f));
+                });
+            }
+            else
+            {
+                mapFragment = (SupportMapFragment)fm.findFragmentById(R.id.detail_map);
+                mapFragment.getMapAsync(googleMap -> { LatLng eating_place = new LatLng(47.204243,11.935167);
+                    googleMap.addMarker(new MarkerOptions().position(eating_place)
+                            .title("Not Available"));
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(eating_place, 18.0f));
+                });
+            }
             left_btn.setOnClickListener(view -> {
                 if(onDelete){
                     dao.delete(list.get(position));
+                    fm.beginTransaction().remove(mapFragment).commit();
                     File file = new File(list.get(position).getImage());
                     file.delete();
                     list.remove(position);
                     recycler.removeViewAt(position);
                     this.notifyItemRemoved(position);
                     this.notifyItemRangeChanged(position, list.size());
+
                     dialog.dismiss();
                 }
                 else
                 {
                     onDelete = true;
+                    Animation leaveAnim = AnimationUtils.loadAnimation(context,R.anim.fade_out);
+                    leaveAnim.setStartOffset(0);
+                    left_btn.startAnimation(leaveAnim);
+                    right_btn.startAnimation(leaveAnim);
+                    Animation comeAnim = AnimationUtils.loadAnimation(context,R.anim.fade_in);
+                    comeAnim.setStartOffset(0);
+                    left_btn.startAnimation(comeAnim);
+                    right_btn.startAnimation(comeAnim);
                     left_btn.setImageResource(R.drawable.ic_confirm);
                     right_btn.setImageResource(R.drawable.ic_cancel);
                 }
@@ -137,13 +151,22 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
             right_btn.setOnClickListener(view -> {
                if(onDelete){
                    onDelete = false;
+                   Animation leaveAnim = AnimationUtils.loadAnimation(context,R.anim.fade_out);
+                   leaveAnim.setStartOffset(0);
+                   left_btn.startAnimation(leaveAnim);
+                   right_btn.startAnimation(leaveAnim);
+                   Animation comeAnim = AnimationUtils.loadAnimation(context,R.anim.fade_in);
+                   comeAnim.setStartOffset(0);
+                   left_btn.startAnimation(comeAnim);
+                   right_btn.startAnimation(comeAnim);
                    left_btn.setImageResource(R.drawable.ic_delete);
                    right_btn.setImageResource(R.drawable.ic_edit);
                }
                else{
                    AppCompatActivity activity = (AppCompatActivity)context;
                    AddFragment myFragment = AddFragment.newInstance(list.get(position));
-                   fm.beginTransaction().remove(mapFragment).commit();
+                   if(mapFragment!=null)
+                       fm.beginTransaction().remove(mapFragment).commit();
                    dialog.dismiss();
                    activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();
 
@@ -172,15 +195,31 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
 
 
 
-            dialog.setOnCancelListener(dialog1 -> fm.beginTransaction().remove(mapFragment).commit());
+            dialog.setOnCancelListener(dialog1 -> {if(mapFragment!=null){fm.beginTransaction().remove(mapFragment).commit();}});
             dialog.show();
         });
+        setAnimation(holder.itemView, position);
     }
 
     public void setFilter(List<Food> newList){
         list=new ArrayList<>();
         list.addAll(newList);
-        this.notifyDataSetChanged();
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Here is the key method to apply the animation
+     */
+    private void setAnimation(View viewToAnimate, int position)
+    {
+        if (position > lastPosition)
+        {
+            Animation animation = AnimationUtils.loadAnimation(context, R.anim.slide_up);
+            animation.setStartOffset(offset);
+            offset+=50;
+            viewToAnimate.startAnimation(animation);
+            lastPosition = position;
+        }
     }
 
     @Override

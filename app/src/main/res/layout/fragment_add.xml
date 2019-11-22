@@ -372,7 +372,7 @@
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@color/themeLight"
-        app:srcCompat="@android:drawable/ic_menu_upload_you_tube" />
+        android:theme="@style/AppTheme"
+        app:srcCompat="@drawable/ic_save" />
 
 </RelativeLayout>

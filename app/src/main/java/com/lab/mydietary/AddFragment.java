@@ -3,26 +3,27 @@ package com.lab.mydietary;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
+
 import android.content.Intent;
-import android.database.Cursor;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Point;
+
 import android.graphics.drawable.BitmapDrawable;
 import android.icu.util.Calendar;
-import android.media.ThumbnailUtils;
+
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -33,6 +34,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -68,18 +71,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link AddFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link AddFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class AddFragment extends Fragment implements OnMapReadyCallback {
     private final int CAMERA_REQUEST_CODE = 1367;
     private EditText food_group_edit,date_edit,time_edit,meal_edit,location_edit,food_name_edit,user_name_edit,note_edit;
@@ -93,6 +86,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     private double lang = 0;
     private FoodDatabase db;
     private SupportMapFragment mapFragment;
+    private SupportMapFragment detailMapFragment;
     private OnFragmentInteractionListener mListener;
     private ImageView camera_image,food_group_image_main;
     private String currentPhotoPath;
@@ -102,6 +96,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     private boolean isUpdate=false;
     private String oldImage;
     private int id = 0;
+    private FoodDao dao;
 
     public AddFragment() {
         // Required empty public constructor
@@ -148,6 +143,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         location_edit = getView().findViewById(R.id.location_edit);
         Places.initialize(getActivity(), getString(R.string.google_maps_key));
         FragmentManager addMng = getChildFragmentManager();
+
         mapFragment = (SupportMapFragment) addMng.findFragmentById(R.id.map);
         if(data.getParcelable("edit") !=  null)
         {
@@ -179,6 +175,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         add_btn.setOnClickListener(v -> addArray());
         camera_btn.setOnClickListener(v -> open_camera());
         db = Room.databaseBuilder(getActivity(),FoodDatabase.class,"Food").allowMainThreadQueries().build();
+        dao = db.getFoodDao();
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -421,31 +418,84 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             {
                 Log.d("ERROR",ex.getMessage());
             }
-
-            FoodDao dao = db.getFoodDao();
-            if(isUpdate)
+            Dialog dialog = new Dialog(getActivity());
+            dialog.setTitle("Confirm");
+            dialog.setContentView(R.layout.card_details);
+            ImageButton left_btn = dialog.findViewById(R.id.left_btn);
+            ImageButton right_btn = dialog.findViewById(R.id.right_btn);
+            left_btn.setImageResource(R.drawable.ic_confirm);
+            right_btn.setImageResource(R.drawable.ic_cancel);
+            if(!address.equals("NaN"))
             {
-
-                Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
-                if(!imageUrl.equals("NaN") && !imageUrl.equals(oldImage))
-                {
-                    File file = new File(oldImage);
-                    file.delete();
-                }
-                dao.update(food);
-                ListFragment myFragment = ListFragment.newInstance();
-                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();
-                return;
+                detailMapFragment = (SupportMapFragment)getFragmentManager().findFragmentById(R.id.detail_map);
+                detailMapFragment.getMapAsync(googleMap -> { LatLng eating_place = new LatLng(lat,lang);
+                    googleMap.addMarker(new MarkerOptions().position(eating_place)
+                            .title(address));
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(eating_place, 18.0f));
+                });
             }
             else
             {
-                Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,imageUrl,address);
-                dao.insert(food);
-                clearFields();
-                return;
+                detailMapFragment = (SupportMapFragment)getFragmentManager().findFragmentById(R.id.detail_map);
+                detailMapFragment.getMapAsync(googleMap -> { LatLng eating_place = new LatLng(47.204243,11.935167);
+                    googleMap.addMarker(new MarkerOptions().position(eating_place)
+                            .title("Not Available"));
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(eating_place, 18.0f));
+                });
+            }
+            final String finalImage = imageUrl;
+            left_btn.setOnClickListener(view -> {
+                if(isUpdate)
+                {
+                    Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,finalImage,address);
+                    if(!finalImage.equals("NaN") && !finalImage.equals(oldImage))
+                    {
+                        File file = new File(oldImage);
+                        file.delete();
+                    }
+                    dao.update(food);
+
+                }
+                else
+                {
+                    Food food = new Food(id,food_name, food_group,date,time,meal,note,user,lat,lang,finalImage,address);
+                    dao.insert(food);
+                    clearFields();
+                }
+                getActivity().getSupportFragmentManager().beginTransaction().remove(detailMapFragment).commit();
+                dialog.dismiss();
+                ListFragment myFragment = ListFragment.newInstance();
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, myFragment).addToBackStack(null).commit();
+            });
+            right_btn.setOnClickListener(view -> {
+                getActivity().getSupportFragmentManager().beginTransaction().remove(detailMapFragment).commit();
+                dialog.dismiss();
+            });
+
+            ImageView top_image = dialog.findViewById(R.id.detail_image_top);
+            ImageView group_image = dialog.findViewById(R.id.detail_food_groupImage);
+            if(!imageUrl.equals("NaN")){
+                top_image.setImageBitmap(BitmapFactory.decodeFile(imageUrl));
+                group_image.setImageBitmap(BitmapFactory.decodeResource(getActivity().getResources(),Food.images_groups[food_group]));
+            }
+            else{
+                top_image.setImageBitmap(BitmapFactory.decodeResource(getActivity().getResources(),Food.images_groups[food_group]));
+                group_image.setImageResource(0);
             }
 
+            ((TextView)dialog.findViewById(R.id.detail_food_name)).setText("NAME : "+food_name);
+            ((TextView)dialog.findViewById(R.id.detail_food_group)).setText("CATEGORY : "+Food.food_groups[food_group]);
+            ((TextView)dialog.findViewById(R.id.detail_date)).setText("DATE : "+date);
+            ((TextView)dialog.findViewById(R.id.detail_time)).setText("TIME : "+time);
+            ((TextView)dialog.findViewById(R.id.detail_location)).setText("LOCATION : "+address);
+            ((TextView)dialog.findViewById(R.id.detail_meal)).setText("MEAL : "+Food.meals[meal]);
+            ((TextView)dialog.findViewById(R.id.detail_notes)).setText("NOTE : "+note);
+            ((TextView)dialog.findViewById(R.id.detail_user)).setText("REPORTER : "+user);
 
+
+
+            dialog.setOnCancelListener(dialog1 -> {if(detailMapFragment!=null){getFragmentManager().beginTransaction().remove(detailMapFragment).commit();}});
+            dialog.show();
         }
 
     }

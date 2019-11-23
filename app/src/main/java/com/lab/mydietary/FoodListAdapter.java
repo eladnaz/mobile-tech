@@ -142,6 +142,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
                 }
                 left_btn.setOnClickListener(view -> {
                     if(onDelete){
+                        onDelete = false;
                         dao.delete(list.get(position));
                         fm.beginTransaction().remove(mapFragment).commit();
                         File file = new File(list.get(position).getImage());
@@ -251,6 +252,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
                 }
                 left_btn.setOnClickListener(view -> {
                     if(onDelete){
+                        onDelete = false;
                         dao.delete(list.get(position));
                         fm.beginTransaction().remove(mapFragment).commit();
                         File file = new File(list.get(position).getImage());
@@ -259,7 +261,6 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
                         recycler.removeViewAt(position);
                         this.notifyItemRemoved(position);
                         this.notifyItemRangeChanged(position, list.size());
-
                         frame.removeView(child);
                     }
                     else

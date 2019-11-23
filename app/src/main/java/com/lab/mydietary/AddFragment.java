@@ -6,6 +6,7 @@ import android.content.Context;
 
 import android.content.Intent;
 
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,7 +19,6 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -34,8 +34,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -98,6 +96,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     private int id = 0;
     private FoodDao dao;
 
+
     public AddFragment() {
         // Required empty public constructor
     }
@@ -124,6 +123,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add, container, false);
+
     }
 
     @Override
@@ -254,6 +254,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             hasImage = true;
         }
     }
+
 
     public Bitmap rotate(float degree,Bitmap raw)
     {
@@ -576,7 +577,8 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     public void onDestroyView() {
         super.onDestroyView();
         mapFragment = null;
-        db.close();
+        if(db!=null)
+            db.close();
     }
 
 

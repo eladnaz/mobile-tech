@@ -4,6 +4,7 @@ package com.lab.mydietary;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import androidx.fragment.app.FragmentTransaction;
 
 
@@ -12,11 +13,11 @@ import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity implements AddFragment.OnFragmentInteractionListener,ListFragment.OnFragmentInteractionListener{
@@ -31,24 +32,24 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        list_screen = ListFragment.newInstance();
-        add_screen = AddFragment.newInstance(null);
-        getSupportFragmentManager().beginTransaction().attach(add_screen).commit();
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,list_screen).commit();
-        pref = getSharedPreferences(SplashActivity.SETTING_CODE,MODE_PRIVATE);
-        edit = pref.edit();
-        boolean isFirst = pref.getBoolean(FIRST_TIME,false);
-        if(!isFirst)
-        {
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
-            alert.setTitle("Notice");
-            alert.setMessage("Splash screen on startup can be disabled in the settings dialog found in the menu above");
-            alert.setPositiveButton("OK",null);
-            alert.show();
-            edit.putBoolean(FIRST_TIME,true);
-            edit.commit();
+        if (savedInstanceState == null) {
+            list_screen = ListFragment.newInstance();
+            add_screen = AddFragment.newInstance(null);
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,list_screen).commit();
+            pref = getSharedPreferences(SplashActivity.SETTING_CODE,MODE_PRIVATE);
+            edit = pref.edit();
+            boolean isFirst = pref.getBoolean(FIRST_TIME,false);
+            if(!isFirst)
+            {
+                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+                alert.setTitle("Notice");
+                alert.setMessage("Splash screen on startup can be disabled in the settings dialog found in the menu above");
+                alert.setPositiveButton("OK",null);
+                alert.show();
+                edit.putBoolean(FIRST_TIME,true);
+                edit.commit();
+            }
         }
-
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
     }
@@ -97,26 +98,17 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
     {
         if(id == LIST_FRAGMENT)
         {
-            if(list_screen != null && !list_screen.isVisible())
-            {
+                list_screen = ListFragment.newInstance();
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.setCustomAnimations(R.anim.slide_in,R.anim.slide_out);
                 ft.replace(R.id.fragment_container,list_screen).commit();
-            }
-            else
-                Toast.makeText(this,"You're already on the Home page",Toast.LENGTH_SHORT).show();
         }
         else if(id == ADD_FRAGMENT)
         {
-            if(add_screen !=null && !add_screen.isVisible())
-            {
+                add_screen = AddFragment.newInstance(null);
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.setCustomAnimations(R.anim.slide_in,R.anim.slide_out);
                 ft.replace(R.id.fragment_container,add_screen).commit();
-            }
-
-            else
-                Toast.makeText(this,"You're already on the adding page",Toast.LENGTH_SHORT).show();
         }
     }
 

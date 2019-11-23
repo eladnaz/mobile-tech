@@ -1,6 +1,8 @@
 package com.lab.mydietary;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -17,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -55,8 +58,8 @@ public class ListFragment extends Fragment implements Comparator<Food> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_search, menu);
 
-        final MenuItem searchItem = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) searchItem.getActionView();
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
         search(searchView);
     }
 
@@ -100,14 +103,18 @@ public class ListFragment extends Fragment implements Comparator<Food> {
         food_added_list =(RecyclerView)view.findViewById(R.id.food_added_list);
         FoodDao dao = db.getFoodDao();
         food_list = dao.getFoods();
-
         if(!(food_list.size() > 0))
             Toast.makeText(getActivity(),"Nothing has been added yet",Toast.LENGTH_SHORT).show();
         else
         {
             Collections.sort(food_list,this);
             Context context = getActivity();
-            adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context,getFragmentManager(),Food.meals,dao,food_added_list);
+            FrameLayout frame = view.findViewById(R.id.frame_right);
+            if(getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context,getFragmentManager(),Food.meals,dao,food_added_list);
+            else
+                adapter = new FoodListAdapter(Food.food_groups,Food.images_groups,food_list,context,getFragmentManager(),Food.meals,dao,food_added_list,frame);
+
             RecyclerView.LayoutManager grid = new GridLayoutManager(getActivity(),2);
 
             food_added_list.setLayoutManager(grid);
@@ -153,7 +160,8 @@ public class ListFragment extends Fragment implements Comparator<Food> {
     @Override
     public void onDestroy(){
         super.onDestroy();
-        db.close();
+        if(db!=null)
+            db.close();
     }
 
     @Override

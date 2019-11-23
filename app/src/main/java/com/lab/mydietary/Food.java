@@ -1,6 +1,5 @@
 package com.lab.mydietary;
 
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,7 +8,6 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import java.util.ArrayList;
 
 @Entity(tableName="Food")
 public class Food implements Parcelable {
@@ -34,6 +32,34 @@ public class Food implements Parcelable {
         this.image = image;
         this.address = address;
     }
+
+    protected Food(Parcel in) {
+        id = in.readInt();
+        name = in.readString();
+        group = in.readInt();
+        date = in.readString();
+        time = in.readString();
+        meal = in.readInt();
+        note = in.readString();
+        user = in.readString();
+        lat = in.readDouble();
+        lang = in.readDouble();
+        image = in.readString();
+        address = in.readString();
+    }
+
+    @Ignore
+    public static final Creator<Food> CREATOR = new Creator<Food>() {
+        @Override
+        public Food createFromParcel(Parcel in) {
+            return new Food(in);
+        }
+
+        @Override
+        public Food[] newArray(int size) {
+            return new Food[size];
+        }
+    };
 
     public String getName() {
         return name;
@@ -165,6 +191,17 @@ public class Food implements Parcelable {
     @Ignore
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-
+        dest.writeInt(id);
+        dest.writeString(name);
+        dest.writeInt(group);
+        dest.writeString(date);
+        dest.writeString(time);
+        dest.writeInt(meal);
+        dest.writeString(note);
+        dest.writeString(user);
+        dest.writeDouble(lat);
+        dest.writeDouble(lang);
+        dest.writeString(image);
+        dest.writeString(address);
     }
 }

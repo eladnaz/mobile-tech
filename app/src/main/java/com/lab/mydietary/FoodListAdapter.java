@@ -235,7 +235,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.MyView
                                 .title(list.get(position).getAddress()));
                         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(eating_place, 18.0f));
                         fm.beginTransaction().remove(mapFragment).commit();
-                        
+
                     });
                 }
                 else

@@ -321,7 +321,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
     private void show_meal_dialog()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),R.style.MyDialogTheme);
-        final ArrayAdapter<String> mealAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item){
+        ArrayAdapter<String> mealAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item){
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -402,7 +402,7 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
             int food_group = Arrays.asList(Food.food_groups).indexOf(editString(food_group_edit));
             String date = editString(date_edit);
             String time = editString(time_edit);
-            int meal = Arrays.asList(Food.food_groups).indexOf(editString(food_group_edit)); //returns -1 if empty.
+            int meal = Arrays.asList(Food.meals).indexOf(editString(meal_edit)); //returns -1 if empty.
             String note = editString(note_edit).replace(" ","").length() > 0 ? editString(note_edit) : "NaN";
             String user = editString(user_name_edit);
             String address = editString(location_edit).replace(" ","").length() > 0 ? editString(location_edit) : "NaN";

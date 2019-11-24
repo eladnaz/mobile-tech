@@ -27,21 +27,24 @@ public class SplashActivity extends AppCompatActivity {
             this.startActivity(intent);
             finish();
         }
-        ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(
-                iv,
-                PropertyValuesHolder.ofFloat("scaleX", 1.2f),
-                PropertyValuesHolder.ofFloat("scaleY", 1.2f));
-        scaleDown.setDuration(310);
+        else
+        {
+            ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(
+                    iv,
+                    PropertyValuesHolder.ofFloat("scaleX", 1.2f),
+                    PropertyValuesHolder.ofFloat("scaleY", 1.2f));
+            scaleDown.setDuration(310);
 
-        scaleDown.setRepeatCount(ObjectAnimator.INFINITE);
-        scaleDown.setRepeatMode(ObjectAnimator.REVERSE);
-        scaleDown.setInterpolator(new FastOutSlowInInterpolator());
-        scaleDown.start();
-        final Handler handler = new Handler();
-        handler.postDelayed(() -> {
-            Intent intent = new Intent(this,MainActivity.class);
-            this.startActivity(intent);
-            finish();
-        }, 10000);
+            scaleDown.setRepeatCount(ObjectAnimator.INFINITE);
+            scaleDown.setRepeatMode(ObjectAnimator.REVERSE);
+            scaleDown.setInterpolator(new FastOutSlowInInterpolator());
+            scaleDown.start();
+            final Handler handler = new Handler();
+            handler.postDelayed(() -> {
+                Intent intent = new Intent(this,MainActivity.class);
+                this.startActivity(intent);
+                finish();
+            }, 10000);
+        }
     }
 }

@@ -50,6 +50,11 @@ public class MainActivity extends AppCompatActivity implements AddFragment.OnFra
                 edit.commit();
             }
         }
+        else
+        {
+            pref = getSharedPreferences(SplashActivity.SETTING_CODE,MODE_PRIVATE);
+            edit = pref.edit();
+        }
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
     }

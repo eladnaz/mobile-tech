@@ -309,9 +309,9 @@ public class AddFragment extends Fragment implements OnMapReadyCallback {
         Button set = dialog.findViewById((R.id.set_button));
         set.setOnClickListener(v -> {
             int hourFull = timePicker.getHour();
+            String am_pm = hourFull < 12 ? "AM" : "PM";
             hourFull = hourFull == 0 ? 12 : hourFull;
             int minute = timePicker.getMinute();
-            String am_pm = hourFull >= 12 ? "PM" : "AM";
             time_edit.setText(String.format("%02d",(hourFull > 12 ? hourFull-12 : hourFull))+":"+String.format("%02d",minute)+" "+ am_pm);
             dialog.dismiss();
         });
